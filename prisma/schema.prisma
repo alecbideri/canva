@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Notes exist independently - the core entity
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String   @default("")
+  tags        String[] @default([])
+  color       String?  // Optional accent color
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Notes can appear on multiple boards as cards
+  cards       Card[]
+}
+
+// Boards are visual canvases to connect notes
+model Board {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  thumbnail   String?
+  
+  // Viewport state
+  zoom        Float    @default(1)
+  panX        Float    @default(0)
+  panY        Float    @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  sections    Section[]
+  cards       Card[]
+  connections Connection[]
+}
+
+// Sections group cards visually on a board
+model Section {
+  id          String   @id @default(cuid())
+  name        String
+  
+  // Position and bounds
+  posX        Float
+  posY        Float
+  width       Float    @default(400)
+  height      Float    @default(300)
+  
+  color       String?
+  isCollapsed Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  boardId     String
+  board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  cards       Card[]
+}
+
+// Cards are instances of Notes placed on a Board
+model Card {
+  id          String   @id @default(cuid())
+  
+  // Position on canvas
+  posX        Float
+  posY        Float
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relationships
+  noteId      String
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  
+  boardId     String
+  board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  sectionId   String?
+  section     Section? @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  
+  // Connections
+  connectionsFrom Connection[] @relation("FromCard")
+  connectionsTo   Connection[] @relation("ToCard")
+}
+
+// Connections link cards together
+model Connection {
+  id          String   @id @default(cuid())
+  
+  fromAnchor  String   @default("bottom") // top, right, bottom, left
+  toAnchor    String   @default("top")
+  
+  color       String?
+  label       String?
+  
+  createdAt   DateTime @default(now())
+  
+  boardId     String
+  board       Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  
+  fromCardId  String
+  fromCard    Card     @relation("FromCard", fields: [fromCardId], references: [id], onDelete: Cascade)
+  
+  toCardId    String
+  toCard      Card     @relation("ToCard", fields: [toCardId], references: [id], onDelete: Cascade)
+}

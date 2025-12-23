@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 
 export function CanvasHeader() {
   const { activeBoard, boards, setActiveBoard, updateSection } = useCanvasStore();
@@ -28,28 +29,33 @@ export function CanvasHeader() {
   const [editTitle, setEditTitle] = useState(activeBoard?.name || '');
 
   const handleTitleSubmit = () => {
-    // Note: We need to update board name, not section
-    // For now, just close the edit mode
     setIsEditingTitle(false);
   };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-14">
-      <div className="flex items-center justify-between h-full px-4 bg-card/80 backdrop-blur-md border-b border-border/50">
+      <div className="flex items-center justify-between h-full px-4">
         {/* Left Section */}
         <div className="flex items-center gap-3">
           {/* Home Link */}
-          <Link
-            href="/"
-            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-          >
-            <Home className="w-5 h-5" />
-          </Link>
+          <div className="bg-card/80 backdrop-blur-md border border-border/50">
+            <Link
+              href="/"
+              className="p-2 flex items-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <Home className="w-5 h-5" />
+            </Link>
+          </div>
+
+          {/* Logo */}
+          <h1 className="text-xl font-bold text-foreground tracking-tight">
+            CANVA<span className="text-primary">id</span>
+          </h1>
 
           {/* Board Title */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-muted transition-colors">
+              <button className="flex items-center gap-2 px-3 py-1.5 bg-card/80 backdrop-blur-md border border-border/50 hover:bg-muted transition-colors">
                 {isEditingTitle ? (
                   <input
                     type="text"
@@ -93,15 +99,15 @@ export function CanvasHeader() {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Search */}
-          <div className="relative">
+          <div className="bg-card/80 backdrop-blur-md border border-border/50">
             {isSearchOpen ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 p-1">
                 <Input
                   type="text"
                   placeholder="Search notes..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-64 h-9"
+                  className="w-64 h-8"
                   autoFocus
                   onBlur={() => {
                     if (!searchQuery) setIsSearchOpen(false);
@@ -110,29 +116,30 @@ export function CanvasHeader() {
               </div>
             ) : (
               <button
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 onClick={() => setIsSearchOpen(true)}
               >
                 <Search className="w-4 h-4" />
-                <span className="text-sm">Search Notes</span>
+                <span className="text-sm">Search</span>
               </button>
             )}
           </div>
 
-          {/* Share */}
-          <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <Share2 className="w-5 h-5" />
-          </button>
-
-          {/* Settings */}
-          <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-            <Settings className="w-5 h-5" />
-          </button>
+          {/* Actions */}
+          <div className="bg-card/80 backdrop-blur-md border border-border/50 flex items-center">
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <Share2 className="w-5 h-5" />
+            </button>
+            <ThemeToggle />
+            <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <Settings className="w-5 h-5" />
+            </button>
+          </div>
 
           {/* More */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+              <button className="p-2 bg-card/80 backdrop-blur-md border border-border/50 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
                 <MoreHorizontal className="w-5 h-5" />
               </button>
             </DropdownMenuTrigger>

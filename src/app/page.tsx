@@ -1,165 +1,131 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useCanvasStore } from '@/store/canvas-store';
-import { FolderCard, StandaloneCard, FilterBar } from '@/components/home';
-import { Plus, Settings, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { useRouter } from 'next/navigation';
-import type { Card } from '@/types/canvas';
+import { Button } from "@/components/ui/button";
+import { Plus, Layout, ArrowRight, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
+import { useEffect, useState } from "react";
+import { useCanvasStore } from "@/store/canvas-store";
+import { useRouter } from "next/navigation";
+import { formatDistanceToNow } from 'date-fns';
 
-type FilterType = 'all' | 'tagged' | 'completed';
-
-export default function HomePage() {
+export default function Home() {
   const router = useRouter();
-  const { boards, createBoard, loadFromLocalStorage } = useCanvasStore();
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [newBoardName, setNewBoardName] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const { boards, createBoard, loadBoards, isLoading } = useCanvasStore();
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    loadFromLocalStorage();
-  }, [loadFromLocalStorage]);
+    loadBoards();
+  }, [loadBoards]);
 
-  // Get all standalone cards (cards without sections from all boards)
-  const standaloneCards: Card[] = mounted
-    ? boards.flatMap((board) =>
-      board.cards.filter((card) => !card.sectionId)
-    )
-    : [];
-
-  const handleCreateBoard = () => {
-    if (newBoardName.trim()) {
-      const board = createBoard(newBoardName.trim());
-      setNewBoardName('');
-      setIsDialogOpen(false);
-      router.push(`/canvas/${board.id}`);
+  const handleCreateBoard = async () => {
+    setIsCreating(true);
+    try {
+      const id = await createBoard("Untitled Board");
+      router.push(`/canvas/${id}`);
+    } catch (error) {
+      console.error("Failed to create board", error);
+    } finally {
+      setIsCreating(false);
     }
   };
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <h1 className="text-xl font-bold text-foreground">Messy Ideas</h1>
-          </div>
+    <div className="min-h-screen flex flex-col items-center p-8 sm:p-20 font-[family-name:var(--font-geist-sans)] relative overflow-hidden">
 
-          <div className="flex items-center gap-3">
-            <FilterBar activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-            <button className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-              <Settings className="w-5 h-5" />
-            </button>
+      {/* Background Pattern */}
+      <div className="absolute inset-0 circle-tiles-bg opacity-30 pointer-events-none" />
+
+      {/* Header */}
+      <header className="w-full max-w-6xl flex justify-between items-center mb-16 z-10">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded bg-primary/20 flex items-center justify-center border border-primary/20 backdrop-blur-sm">
+            <div className="w-4 h-4 rounded-full bg-primary animate-pulse" />
           </div>
+          <span className="font-bold text-xl tracking-tight">CANVAid</span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <Button variant="ghost">Sign In</Button>
+          <Button>Get Started</Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-6 py-8">
-        {/* Boards Section */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-foreground">Your Boards</h2>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  New Board
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Create New Board</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <Input
-                    placeholder="Board name..."
-                    value={newBoardName}
-                    onChange={(e) => setNewBoardName(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleCreateBoard()}
-                    autoFocus
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleCreateBoard} disabled={!newBoardName.trim()}>
-                      Create Board
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
+      <main className="flex flex-col items-center text-center max-w-4xl z-10 w-full">
+        {boards.length === 0 && !isLoading ? (
+          <>
+            <div className="mb-6 inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium border border-primary/20 backdrop-blur-sm">
+              <span className="relative flex h-2 w-2 mr-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              Intelligent Canvas Workspace
+            </div>
 
-          {boards.length === 0 ? (
-            <div className="text-center py-16 px-4">
-              <div className="w-16 h-16 rounded-2xl bg-muted mx-auto mb-4 flex items-center justify-center">
-                <Sparkles className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">No boards yet</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                Create your first board to start organizing your messy ideas with cards, sections, and connections.
-              </p>
-              <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                Create Your First Board
+            <h1 className="text-5xl sm:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/70">
+              Organize your thoughts <br /> visually.
+            </h1>
+
+            <p className="text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed">
+              Create infinite canvases to brainstorm, plan projects, and connect ideas.
+              The most intuitive way to think effectively.
+            </p>
+
+            <div className="flex gap-4">
+              <Button size="lg" className="h-12 px-8 text-base shadow-lg shadow-primary/20 transition-all hover:scale-105" onClick={handleCreateBoard} disabled={isCreating}>
+                {isCreating ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <Plus className="w-5 h-5 mr-2" />}
+                {isCreating ? 'Creating...' : 'Create New Board'}
+              </Button>
+              <Button size="lg" variant="outline" className="h-12 px-8 text-base bg-background/50 backdrop-blur-sm hover:bg-background/80 transition-all">
+                View Templates <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {boards.map((board) => (
-                <FolderCard key={board.id} board={board} />
-              ))}
+          </>
+        ) : (
+          <div className="w-full text-left">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold">Your Boards</h2>
+              <Button onClick={handleCreateBoard} disabled={isCreating}>
+                {isCreating ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                New Board
+              </Button>
             </div>
-          )}
-        </section>
 
-        {/* Standalone Cards Section */}
-        {standaloneCards.length > 0 && (
-          <section>
-            <h2 className="text-lg font-semibold text-foreground mb-6">Quick Notes</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {standaloneCards.map((card) => (
-                <StandaloneCard key={card.id} card={card} />
-              ))}
-            </div>
-          </section>
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-48 rounded-xl bg-muted/50 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {boards.map((board) => (
+                  <Link href={`/canvas/${board.id}`} key={board.id} className="group relative block h-48 rounded-xl border border-border/50 bg-card/50 backdrop-blur-sm overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/5">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="p-6 relative z-10 flex flex-col h-full justify-between">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1 group-hover:text-primary transition-colors">{board.name}</h3>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{board.description || "No description"}</p>
+                      </div>
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Layout className="w-3 h-3 mr-1" />
+                        Updated {formatDistanceToNow(new Date(board.updatedAt), { addSuffix: true })}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         )}
       </main>
 
-      {/* Floating Action Button */}
-      <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          size="lg"
-          className="rounded-full w-14 h-14 shadow-lg"
-          onClick={() => setIsDialogOpen(true)}
-        >
-          <Plus className="w-6 h-6" />
-        </Button>
-      </div>
+      {/* Footer */}
+      <footer className="mt-auto py-8 text-sm text-muted-foreground z-10">
+        <p>© 2024 CANVAid. All rights reserved.</p>
+      </footer>
     </div>
   );
 }

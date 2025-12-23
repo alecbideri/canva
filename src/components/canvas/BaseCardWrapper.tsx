@@ -27,6 +27,7 @@ export function BaseCardWrapper({ card, children, className = '' }: BaseCardWrap
     selection,
     selectCard,
     deleteCard,
+    duplicateCard,
     moveCard,
     startDrag,
     updateDrag,
@@ -108,7 +109,7 @@ export function BaseCardWrapper({ card, children, className = '' }: BaseCardWrap
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => duplicateCard(card.id)}>
               <Copy className="w-4 h-4 mr-2" />
               Duplicate
             </DropdownMenuItem>

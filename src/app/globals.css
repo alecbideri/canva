@@ -60,7 +60,7 @@
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.25rem;
   --background: oklch(0.98 0.002 90);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -163,6 +163,48 @@
   background-image: 
     radial-gradient(circle, var(--canvas-grid) 1px, transparent 1px);
   background-size: 24px 24px;
+}
+
+/* Circle Tiles Background */
+.circle-tiles-bg {
+  position: relative;
+  overflow: hidden;
+}
+
+.circle-tiles-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: 
+    radial-gradient(circle at 10% 20%, oklch(0.85 0.02 200 / 30%) 0%, transparent 8%),
+    radial-gradient(circle at 90% 10%, oklch(0.80 0.03 150 / 25%) 0%, transparent 6%),
+    radial-gradient(circle at 30% 80%, oklch(0.82 0.02 280 / 20%) 0%, transparent 10%),
+    radial-gradient(circle at 70% 60%, oklch(0.88 0.02 100 / 25%) 0%, transparent 7%),
+    radial-gradient(circle at 50% 30%, oklch(0.85 0.02 50 / 20%) 0%, transparent 5%),
+    radial-gradient(circle at 20% 50%, oklch(0.83 0.03 180 / 22%) 0%, transparent 9%),
+    radial-gradient(circle at 85% 75%, oklch(0.86 0.02 220 / 28%) 0%, transparent 6%),
+    radial-gradient(circle at 40% 10%, oklch(0.84 0.02 320 / 18%) 0%, transparent 8%),
+    radial-gradient(circle at 60% 90%, oklch(0.87 0.02 80 / 24%) 0%, transparent 7%),
+    radial-gradient(circle at 15% 70%, oklch(0.81 0.03 260 / 20%) 0%, transparent 5%);
+}
+
+.dark .circle-tiles-bg::before {
+  background-image: 
+    radial-gradient(circle at 10% 20%, oklch(0.35 0.02 200 / 40%) 0%, transparent 8%),
+    radial-gradient(circle at 90% 10%, oklch(0.30 0.03 150 / 35%) 0%, transparent 6%),
+    radial-gradient(circle at 30% 80%, oklch(0.32 0.02 280 / 30%) 0%, transparent 10%),
+    radial-gradient(circle at 70% 60%, oklch(0.38 0.02 100 / 35%) 0%, transparent 7%),
+    radial-gradient(circle at 50% 30%, oklch(0.35 0.02 50 / 30%) 0%, transparent 5%),
+    radial-gradient(circle at 20% 50%, oklch(0.33 0.03 180 / 32%) 0%, transparent 9%),
+    radial-gradient(circle at 85% 75%, oklch(0.36 0.02 220 / 38%) 0%, transparent 6%),
+    radial-gradient(circle at 40% 10%, oklch(0.34 0.02 320 / 28%) 0%, transparent 8%),
+    radial-gradient(circle at 60% 90%, oklch(0.37 0.02 80 / 34%) 0%, transparent 7%),
+    radial-gradient(circle at 15% 70%, oklch(0.31 0.03 260 / 30%) 0%, transparent 5%);
 }
 
 /* Smooth transitions for interactive elements */
